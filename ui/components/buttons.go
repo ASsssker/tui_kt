@@ -2,14 +2,13 @@ package components
 
 import (
 	"fmt"
+	"t_kt/cli/cmd/commands"
 	"t_kt/ui/styles"
 
 	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
-
-type Loaded int
 
 type CheckBox struct {
 	Title  string
@@ -58,6 +57,7 @@ type Button struct {
 	loaded  bool
 	F       func() tea.Msg
 	style   lipgloss.Style
+	err error
 }
 
 func InitialButton(title string, f func() tea.Msg) Button {
@@ -77,11 +77,14 @@ func (b Button) Init() tea.Cmd {
 
 func (b Button) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	switch msg := msg.(type) {
+	case commands.RunResMsg:
+		b.loaded = false
+		return b, nil
 	case tea.KeyMsg:
 		switch msg.String() {
 		case "enter", " ":
 			b.loaded = true
-			return b, nil
+			return b, b.F
 
 		case "c":
 			b.loaded = false
@@ -113,3 +116,26 @@ func (b Button) View() string {
 func (b Button) GetLoadStatus() tea.Msg {
 	return b.loaded
 }
+
+type Text struct {
+	Title string
+	Status bool
+	
+}
+
+func InitialText(text string) Text {
+	return Text{Title: text}
+}
+
+func (t Text) Init() tea.Cmd {
+	return nil
+}
+
+func (t Text) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	return t, func() tea.Msg {return t.Status}
+}
+
+func (t Text) View() string {
+	return t.Title
+}
+
