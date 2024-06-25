@@ -3,6 +3,7 @@ package tui
 import "github.com/charmbracelet/bubbles/key"
 
 type keyMap struct {
+	Enter key.Binding
 	Up    key.Binding
 	Down  key.Binding
 	Left  key.Binding
@@ -12,6 +13,10 @@ type keyMap struct {
 }
 
 var keys = keyMap{
+	Enter: key.NewBinding(
+		key.WithKeys("enter", " "),
+		key.WithHelp("enter/space", "выбрать"),
+	),
 	Up: key.NewBinding(
 		key.WithKeys("up", "w"),
 		key.WithHelp("↑/k", "вверх"),

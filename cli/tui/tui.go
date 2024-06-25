@@ -2,10 +2,8 @@ package tui
 
 import (
 	"fmt"
-	// "strings"
-	"t_kt/cli/cmd/commands"
-	"t_kt/ui/components"
-	"t_kt/ui/styles"
+
+	"t_kt/cli/cmd"
 
 	"github.com/charmbracelet/bubbles/help"
 	"github.com/charmbracelet/bubbles/spinner"
@@ -14,106 +12,76 @@ import (
 )
 
 type Application struct {
-	activeMenu int
-	cursor int
-	menus []string
-	loaded bool
-	menuOptions map[int][]tea.Model
-	keys keyMap
-	help help.Model
+	activeMenu    int
+	cursor        int
+	menus         []string
+	loaded        bool
+	menuOptions   map[int][]tea.Model
+	keys          keyMap
+	help          help.Model
+	spinner       spinner.Model
 	selectedStyle lipgloss.Style
-	errorStyle lipgloss.Style
-	err error
+	errorStyle    lipgloss.Style
+	err           error
 }
 
-func (app Application) Error() string { 
+func (app Application) Error() string {
 	return app.err.Error()
 }
 
 func InitApp() Application {
 	opt1 := []tea.Model{
-		components.InitialButton("Очистить логи", commands.ClearLogs),
-		components.InitialButton("Собрать Логи", commands.ExctractLogs),
+		InitialButton("Очистить логи", cmd.ClearLogs),
+		InitialButton("Собрать логи", cmd.ExctractLogs),
+		InitialButton("Закрыть клиент", cmd.KillUI),
 	}
 
-	opt2 := []tea.Model{components.InitialText("...")}
+	opt2 := []tea.Model{InitialText("...")}
+
+	s := spinner.New()
+	s.Spinner = spinner.Line
 
 	return Application{
-		activeMenu: 0,
-		cursor: 0,
-		menus: []string{"AN", "Cloud"},
-		menuOptions: map[int][]tea.Model{0:opt1, 1:opt2,},
-		keys: keys,
-		selectedStyle: styles.SelectedDefaultStyle(),
-		errorStyle: styles.ErrorDefaultStyle(),
+		activeMenu:    0,
+		cursor:        0,
+		menus:         []string{"AN", "..."},
+		menuOptions:   map[int][]tea.Model{0: opt1, 1: opt2},
+		keys:          keys,
+		spinner: s,
+		selectedStyle: SelectedDefaultStyle(),
+		errorStyle:    ErrorDefaultStyle(),
 	}
 }
 
 func (app Application) Init() tea.Cmd {
-	return tea.ClearScreen
+	return tea.Batch(tea.ClearScreen, app.spinner.Tick)
 }
 
 func (app Application) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
+	var cmds tea.Cmd
+
 	switch msg := msg.(type) {
-	case commands.RunResMsg:
-		app.sendBack(msg)
-		if msg == commands.Unsuccessfully {
-			app.err = fmt.Errorf("Ошибка при выполнении команды")
+	case cmd.RunResMsg:
+		if msg != cmd.Successfully {
+			app.err = fmt.Errorf("ошибка: %s", msg.Info)
 		}
-		return app, spinner.Tick
+		app.loaded = false
+		return app, nil
 	case tea.KeyMsg:
 		app.err = nil
 		switch msg.String() {
 		case "ctrl+c", "q":
 			return app, tea.Batch(tea.ClearScreen, tea.Quit)
-
-		case "enter", " ":
-			cmd := app.sendBack(msg)
-			return app, cmd
-
-		case "c":
-			app.sendBack(msg)
-
-		case "left", "a":
-			app.cursor = 0
-			status := app.toBool(msg)
-			if app.activeMenu != 0 && !status {
-				app.activeMenu--
-			}
-			return app, spinner.Tick
-
-		case "right", "d":
-			app.cursor = 0
-			status := app.toBool(msg)
-			if app.activeMenu != len(app.menus) -1  && !status {
-				app.activeMenu++
-			}
-			return app, spinner.Tick
-
-		case "up", "w":
-			status := app.toBool(msg)
+		default:
+			cmds = app.updateCursor(msg)
 			
-			if app.cursor != 0 && !status{
-				app.cursor--
-			}
-			return app, spinner.Tick
+			return app, cmds
 
-		case "down", "s":
-			status := app.toBool(msg)
-			if app.cursor != len(app.menuOptions[app.activeMenu]) - 1 && !status{
-				app.cursor++
-			}
-			return app, spinner.Tick
 		}
-
 	default:
-		var cmd tea.Cmd
-		cmd = app.sendBack(msg)
-		return app, cmd
-
+		app.spinner, cmds = app.spinner.Update(msg)
+		return app, cmds
 	}
-
-	return app, nil
 }
 
 func (app Application) View() string {
@@ -129,13 +97,19 @@ func (app Application) View() string {
 	menusView += "\n\n"
 
 	for idx, option := range app.menuOptions[app.activeMenu] {
+		var spinner string
 		cursor := " "
 		if idx == app.cursor {
 			cursor = app.selectedStyle.Render(">")
+			
+			if app.loaded{
+				spinner = app.spinner.View()
+			}
 		}
-		menusView += fmt.Sprintf("%s %s\n\n", cursor, option.View())
+
+		menusView += fmt.Sprintf("%s %s %s\n\n", cursor, option.View(), spinner)
 	}
-	
+
 	errView := "\n\n"
 	if app.err != nil {
 		errView = app.errorStyle.Render(app.Error()) + errView
@@ -144,25 +118,9 @@ func (app Application) View() string {
 	view := menusView + optionsView + errView
 
 	helpView := app.help.View(app.keys)
-	
+
 	// height := 8 - strings.Count(view, "\n") - strings.Count(helpView, "\n")
 
-	return view +  helpView
+	return view + helpView
 }
 
-
-func (app Application) sendBack(msg tea.Msg) tea.Cmd {
-	var cmd tea.Cmd
-	app.menuOptions[app.activeMenu][app.cursor], cmd = app.menuOptions[app.activeMenu][app.cursor].Update(msg)
-
-	return cmd
-}
-
-func (app Application) toBool(msg tea.Msg) bool {
-	msg = app.sendBack(msg)()
-	s, ok := msg.(bool)
-	if !ok {
-		return false
-	}
-	return s
-}
