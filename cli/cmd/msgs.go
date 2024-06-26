@@ -6,7 +6,9 @@ type RunResMsg struct {
 
 var (
 	Successfully = RunResMsg{Info: "succesfull"}
-	DumpDrop =  RunResMsg{Info: "damp drop"}
+	ClientDumpDrop =  RunResMsg{Info: "client dump drop"}
+	ServerDumpDrop = RunResMsg{Info: "server dump drop"}
+
 )
 
 func createErrMsg(err error) RunResMsg {

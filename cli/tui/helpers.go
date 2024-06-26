@@ -1,6 +1,8 @@
 package tui
 
 import (
+	"t_kt/cli/cmd"
+
 	"github.com/charmbracelet/bubbles/key"
 	tea "github.com/charmbracelet/bubbletea"
 )
@@ -46,4 +48,13 @@ func (app *Application) updateSelectedOption(msg tea.Msg) tea.Cmd {
 	app.menuOptions[app.activeMenu][app.cursor], cmd = app.menuOptions[app.activeMenu][app.cursor].Update(msg)
 
 	return cmd
+}
+
+func (app *Application) checkDumpMsg() cmd.RunResMsg {
+	select{
+	case msg := <-app.mq:
+		return msg
+	default:
+		return cmd.RunResMsg{}
+	}
 }

@@ -17,6 +17,7 @@ type Application struct {
 	menus         []string
 	loaded        bool
 	menuOptions   map[int][]tea.Model
+	mq            chan cmd.RunResMsg
 	keys          keyMap
 	help          help.Model
 	spinner       spinner.Model
@@ -34,6 +35,10 @@ func InitApp() Application {
 		InitialButton("Очистить логи", cmd.ClearLogs),
 		InitialButton("Собрать логи", cmd.ExctractLogs),
 		InitialButton("Закрыть клиент", cmd.KillUI),
+		InitialButton("Включить дебаг", cmd.SwitchToDebug),
+		InitialButton("Перезагрузить сервер", cmd.RestartSrv),
+		InitialButton("Отключить сервер", cmd.StopSrv),
+		InitialButton("Запустить сервер", cmd.StartSrv),
 	}
 
 	opt2 := []tea.Model{InitialText("...")}
@@ -46,8 +51,9 @@ func InitApp() Application {
 		cursor:        0,
 		menus:         []string{"AN", "..."},
 		menuOptions:   map[int][]tea.Model{0: opt1, 1: opt2},
+		mq:            make(chan cmd.RunResMsg),
 		keys:          keys,
-		spinner: s,
+		spinner:       s,
 		selectedStyle: SelectedDefaultStyle(),
 		errorStyle:    ErrorDefaultStyle(),
 	}
@@ -74,7 +80,7 @@ func (app Application) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			return app, tea.Batch(tea.ClearScreen, tea.Quit)
 		default:
 			cmds = app.updateCursor(msg)
-			
+
 			return app, cmds
 
 		}
@@ -101,8 +107,8 @@ func (app Application) View() string {
 		cursor := " "
 		if idx == app.cursor {
 			cursor = app.selectedStyle.Render(">")
-			
-			if app.loaded{
+
+			if app.loaded {
 				spinner = app.spinner.View()
 			}
 		}
@@ -123,4 +129,3 @@ func (app Application) View() string {
 
 	return view + helpView
 }
-
