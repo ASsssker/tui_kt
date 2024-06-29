@@ -12,19 +12,18 @@ import (
 )
 
 const (
-	serverLogPath = "/opt/AxxonSoft/AxxonNext/Logs"
-	clientLogPath = "%s/.local/share/AxxonSoft/AxxonNext/Logs"
+	serverLogPath     = "/opt/AxxonSoft/AxxonNext/Logs"
+	clientLogPath     = "%s/.local/share/AxxonSoft/AxxonNext/Logs"
 	extractLogAppPath = "/opt/AxxonSoft/AxxonNext/bin/support"
-	dumpDstPath = "./"
-	confFilePath = "/opt/AxxonSoft/AxxonNext/instance.conf"
+	dumpDstPath       = "./"
+	confFilePath      = "/opt/AxxonSoft/AxxonNext/instance.conf"
 
 	clientName = "UILauncher"
 
 	restartServer = "axxon-next restart"
-	stopServer = "axxon-next stop"
-	startServer = "axxon-next start"
+	stopServer    = "axxon-next stop"
+	startServer   = "axxon-next start"
 )
-
 
 func ClearLogs() tea.Msg {
 	msg := clearDir(serverLogPath)
@@ -37,7 +36,7 @@ func ClearLogs() tea.Msg {
 	}
 
 	path := fmt.Sprintf(clientLogPath, dir)
-	
+
 	return clearDir(path)
 }
 
@@ -64,17 +63,16 @@ func KillUI() tea.Msg {
 	if err = cmd.Run(); err != nil {
 		return createErrMsg(err)
 	}
-	
+
 	return Successfully
 }
 
 func RestartSrv() tea.Msg {
 	cmd := exec.Command("service", strings.Split(restartServer, " ")...)
 	if err := cmd.Run(); err != nil {
-		fmt.Print(err.Error())
 		return createErrMsg(err)
 	}
-	
+
 	return Successfully
 }
 
@@ -83,7 +81,7 @@ func StopSrv() tea.Msg {
 	if err := cmd.Run(); err != nil {
 		return createErrMsg(err)
 	}
-	
+
 	return Successfully
 }
 
@@ -123,4 +121,3 @@ func SwitchToDebug() tea.Msg {
 
 	return Successfully
 }
-

@@ -5,7 +5,6 @@ import (
 	"t_kt/cli/cmd"
 	"time"
 
-	"github.com/charmbracelet/bubbles/spinner"
 	tea "github.com/charmbracelet/bubbletea"
 	"github.com/charmbracelet/lipgloss"
 )
@@ -13,7 +12,7 @@ import (
 type CheckBox struct {
 	Title  string
 	Status bool
-	Action      func() tea.Msg
+	Action func() tea.Msg
 }
 
 func InitialCheckBox(title string, f func() tea.Msg) CheckBox {
@@ -52,18 +51,15 @@ func (c CheckBox) getStatus() tea.Msg {
 }
 
 type Button struct {
-	Title   string
-	Action       func() tea.Msg
-	style   lipgloss.Style
+	Title  string
+	Action func() tea.Msg
+	style  lipgloss.Style
 }
 
 func InitialButton(title string, f func() tea.Msg) Button {
-	s := spinner.New()
-	s.Style = lipgloss.NewStyle().Foreground(lipgloss.Color("#B8860B"))
-	s.Spinner = spinner.Line
 	return Button{Title: title,
-		Action:       f,
-		style:   ButtonDefaultStyle(),
+		Action: f,
+		style:  ButtonDefaultStyle(),
 	}
 }
 
@@ -91,7 +87,6 @@ func (b Button) View() string {
 
 type Text struct {
 	Title string
-	
 }
 
 func InitialText(text string) Text {
@@ -112,4 +107,3 @@ func (t Text) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 func (t Text) View() string {
 	return t.Title
 }
-

@@ -2,6 +2,7 @@ package tui
 
 import (
 	"fmt"
+	"time"
 
 	"t_kt/cli/cmd"
 
@@ -17,12 +18,12 @@ type Application struct {
 	menus         []string
 	loaded        bool
 	menuOptions   map[int][]tea.Model
-	mq            chan cmd.RunResMsg
 	keys          keyMap
 	help          help.Model
 	spinner       spinner.Model
 	selectedStyle lipgloss.Style
 	errorStyle    lipgloss.Style
+	info []string
 	err           error
 }
 
@@ -51,7 +52,6 @@ func InitApp() Application {
 		cursor:        0,
 		menus:         []string{"AN", "..."},
 		menuOptions:   map[int][]tea.Model{0: opt1, 1: opt2},
-		mq:            make(chan cmd.RunResMsg),
 		keys:          keys,
 		spinner:       s,
 		selectedStyle: SelectedDefaultStyle(),
@@ -60,34 +60,48 @@ func InitApp() Application {
 }
 
 func (app Application) Init() tea.Cmd {
-	return tea.Batch(tea.ClearScreen, app.spinner.Tick)
+	return tea.Batch(tea.ClearScreen, app.spinner.Tick, cmd.InitChecker, cmd.CheckDump)
 }
 
 func (app Application) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
-	var cmds tea.Cmd
+	var cmds []tea.Cmd
 
 	switch msg := msg.(type) {
 	case cmd.RunResMsg:
-		if msg != cmd.Successfully {
-			app.err = fmt.Errorf("ошибка: %s", msg.Info)
-		}
-		app.loaded = false
-		return app, nil
+		switch msg {
+		case cmd.DumpDrop:
+			app.info = append(app.info, fmt.Sprintf("%s %s", time.Now().Format("15:04:05"), msg.Info))
+			return app, app.checkDump
+		
+		case cmd.NoDumps:
+			return app, app.checkDump
+
+		default:
+			if msg != cmd.Successfully {
+				app.err = fmt.Errorf("ошибка: %s", msg.Info)
+			}
+			app.loaded = false
+			return app, nil
+	}
 	case tea.KeyMsg:
 		app.err = nil
 		switch msg.String() {
 		case "ctrl+c", "q":
 			return app, tea.Batch(tea.ClearScreen, tea.Quit)
 		default:
-			cmds = app.updateCursor(msg)
-
-			return app, cmds
+			cmds = append(cmds, app.updateCursor(msg)...)
+			return app, tea.Batch(cmds...)
 
 		}
-	default:
-		app.spinner, cmds = app.spinner.Update(msg)
-		return app, cmds
+	case spinner.TickMsg:
+		var c tea.Cmd
+		app.spinner, c = app.spinner.Update(msg)
+		cmds = append(cmds, c)
+
+		return app, tea.Batch(cmds...)
 	}
+
+	return app, nil
 }
 
 func (app Application) View() string {
@@ -116,12 +130,20 @@ func (app Application) View() string {
 		menusView += fmt.Sprintf("%s %s %s\n\n", cursor, option.View(), spinner)
 	}
 
+	infoView := "\n\n"
+	if app.info != nil {
+		for i:=len(app.info) - 1; i>=0; i-- {
+			infoView += app.errorStyle.Render(app.info[i]) + "\n"
+		}
+	}
+
+
 	errView := "\n\n"
 	if app.err != nil {
 		errView = app.errorStyle.Render(app.Error()) + errView
 	}
 
-	view := menusView + optionsView + errView
+	view := menusView + optionsView + infoView + errView
 
 	helpView := app.help.View(app.keys)
 

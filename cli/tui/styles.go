@@ -2,7 +2,6 @@ package tui
 
 import "github.com/charmbracelet/lipgloss"
 
-
 func ButtonDefaultStyle() lipgloss.Style {
 	s := lipgloss.NewStyle().Foreground(lipgloss.Color("#FFE4C4"))
 	return s

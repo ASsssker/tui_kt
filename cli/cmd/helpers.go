@@ -23,8 +23,6 @@ func clearDir(name string) RunResMsg {
 	return Successfully
 }
 
-
-
 func getHomeDir() (string, error) {
 	file, err := os.Open("/etc/passwd")
 	if err != nil {
@@ -37,7 +35,7 @@ func getHomeDir() (string, error) {
 		str := scanner.Text()
 		if strings.Contains(str, "1000") {
 			username := strings.Split(str, ":")[0]
-			
+
 			return fmt.Sprintf("/home/%s", username), nil
 		}
 	}

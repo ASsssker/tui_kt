@@ -7,25 +7,33 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-
-func (app *Application) updateCursor(msg tea.KeyMsg) tea.Cmd {
+func (app *Application) updateCursor(msg tea.KeyMsg) []tea.Cmd {
+	var cmds []tea.Cmd
 	if app.loaded {
-		return app.spinner.Tick
+		return append(cmds, app.spinner.Tick)
 	}
-
-	var cmd tea.Cmd
 
 	switch {
 	case key.Matches(msg, app.keys.Enter):
-		cmd = app.updateSelectedOption(msg)
+		c := app.updateSelectedOption(msg)
 		app.loaded = true
+		opt := app.getSelectedOption()
+		switch opt := opt.(type) {
+		case Button:
+			if opt.Title == "Очистить логи" {
+				cmds = append(cmds, c, cmd.InitChecker)
+
+				return cmds
+			}
+			cmds = append(cmds, c)
+		}
 
 	case key.Matches(msg, app.keys.Up):
 		if app.cursor != 0 {
 			app.cursor--
 		}
 	case key.Matches(msg, app.keys.Down):
-		if app.cursor != len(app.menuOptions[app.activeMenu]) - 1 {
+		if app.cursor != len(app.menuOptions[app.activeMenu])-1 {
 			app.cursor++
 		}
 	case key.Matches(msg, app.keys.Right):
@@ -40,7 +48,7 @@ func (app *Application) updateCursor(msg tea.KeyMsg) tea.Cmd {
 		}
 	}
 
-	return cmd
+	return cmds
 }
 
 func (app *Application) updateSelectedOption(msg tea.Msg) tea.Cmd {
@@ -50,11 +58,14 @@ func (app *Application) updateSelectedOption(msg tea.Msg) tea.Cmd {
 	return cmd
 }
 
-func (app *Application) checkDumpMsg() cmd.RunResMsg {
-	select{
-	case msg := <-app.mq:
-		return msg
-	default:
-		return cmd.RunResMsg{}
+func (app *Application) getSelectedOption() tea.Model {
+	return app.menuOptions[app.activeMenu][app.cursor]
+}
+
+func (app *Application) checkDump() tea.Msg {
+	msg := cmd.CheckDump()
+	if msg == cmd.DumpDrop {
+		cmd.InitChecker()
 	}
+	return msg
 }
