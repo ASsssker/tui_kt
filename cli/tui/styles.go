@@ -12,6 +12,11 @@ func SelectedDefaultStyle() lipgloss.Style {
 	return s
 }
 
+func DumpDefaultStyle() lipgloss.Style {
+	s := lipgloss.NewStyle().Foreground(lipgloss.Color("#ff0808"))
+	return s
+}
+
 func ErrorDefaultStyle() lipgloss.Style {
 	s := lipgloss.NewStyle().Foreground(lipgloss.Color("#B2222"))
 	return s

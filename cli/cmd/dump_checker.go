@@ -10,32 +10,27 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-var (
-	clientDumpPath = getHome()
-	serverDumpPath = "/opt/AxxonSoft/AxxonNext/Logs"
-)
-
 var dumpsList []string
 
-var initDumpCheckerErr = errors.New("init dump checker error")
-var dumpCkeckerErr = errors.New("dump checker error")
+var ErrInitDumpCheckerErr = errors.New("init dump checker error")
+var ErrDumpCkeckerErr = errors.New("dump checker error")
 
 func InitChecker() tea.Msg {
 	if len(dumpsList) > 0 {
 		dumpsList = []string{}
 	}
 
-	clientDumps, err := getDumps(clientDumpPath)
+	clientDumps, err := getDumps(clientLogPath)
 	if err != nil {
-		return createErrMsg(errors.Join(initDumpCheckerErr, err))
+		return createErrMsg(errors.Join(ErrInitDumpCheckerErr, err))
 	}
 	if len(clientDumps) > 0 {
 		dumpsList = append(dumpsList, clientDumps...)
 	}
 
-	serverDumps, err := getDumps(serverDumpPath)
+	serverDumps, err := getDumps(serverLogPath)
 	if err != nil {
-		return createErrMsg(errors.Join(initDumpCheckerErr, err))
+		return createErrMsg(errors.Join(ErrInitDumpCheckerErr, err))
 	}
 	if len(serverDumps) > 0 {
 		dumpsList = append(dumpsList, serverDumps...)
@@ -47,15 +42,14 @@ func InitChecker() tea.Msg {
 func CheckDump() tea.Msg {
 	time.Sleep(time.Second * 5)
 
-
-	clientDumps, err := getDumps(clientDumpPath)
+	clientDumps, err := getDumps(clientLogPath)
 	if err != nil {
-		return createErrMsg(errors.Join(dumpCkeckerErr, err))
+		return createErrMsg(errors.Join(ErrDumpCkeckerErr, err))
 	}
 
-	serverDumps, err := getDumps(serverDumpPath)
+	serverDumps, err := getDumps(serverLogPath)
 	if err != nil {
-		return createErrMsg(errors.Join(dumpCkeckerErr, err))
+		return createErrMsg(errors.Join(ErrDumpCkeckerErr, err))
 	}
 
 	totalDumps := len(clientDumps) + len(serverDumps)
@@ -81,11 +75,4 @@ func getDumps(path string) ([]string, error) {
 	}
 
 	return dumps, nil
-}
-
-
-func getHome() string {
-	dir, _ := getHomeDir()
-
-	return fmt.Sprintf(clientLogPath, dir)
 }

@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"bytes"
-	"fmt"
 	"io"
 	"os"
 	"os/exec"
@@ -11,9 +10,9 @@ import (
 	tea "github.com/charmbracelet/bubbletea"
 )
 
-const (
+var (
 	serverLogPath     = "/opt/AxxonSoft/AxxonNext/Logs"
-	clientLogPath     = "%s/.local/share/AxxonSoft/AxxonNext/Logs"
+	clientLogPath     = getHome()
 	extractLogAppPath = "/opt/AxxonSoft/AxxonNext/bin/support"
 	dumpDstPath       = "./"
 	confFilePath      = "/opt/AxxonSoft/AxxonNext/instance.conf"
@@ -30,14 +29,7 @@ func ClearLogs() tea.Msg {
 	if msg != Successfully {
 		return msg
 	}
-	dir, err := getHomeDir()
-	if err != nil {
-		return createErrMsg(err)
-	}
-
-	path := fmt.Sprintf(clientLogPath, dir)
-
-	return clearDir(path)
+	return clearDir(clientLogPath)
 }
 
 func ExctractLogs() tea.Msg {

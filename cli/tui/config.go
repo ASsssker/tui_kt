@@ -33,10 +33,6 @@ var keys = keyMap{
 		key.WithKeys("right", "d"),
 		key.WithHelp("→/l", "переключить меню на право"),
 	),
-	// Help: key.NewBinding(
-	// 	key.WithKeys("?"),
-	// 	key.WithHelp("?", "помощь"),
-	// ),
 	Quit: key.NewBinding(
 		key.WithKeys("q", "esc", "ctrl+c"),
 		key.WithHelp("q", "выход"),

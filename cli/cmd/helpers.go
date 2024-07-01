@@ -42,3 +42,9 @@ func getHomeDir() (string, error) {
 
 	return "", fmt.Errorf("client dir not found")
 }
+
+func getHome() string {
+	dir, _ := getHomeDir()
+
+	return fmt.Sprintf("%s/.local/share/AxxonSoft/AxxonNext/Logs", dir)
+}

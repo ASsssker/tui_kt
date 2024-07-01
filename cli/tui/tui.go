@@ -21,6 +21,7 @@ type Application struct {
 	keys          keyMap
 	help          help.Model
 	spinner       spinner.Model
+	dumpDropStyle lipgloss.Style
 	selectedStyle lipgloss.Style
 	errorStyle    lipgloss.Style
 	info []string
@@ -54,6 +55,7 @@ func InitApp() Application {
 		menuOptions:   map[int][]tea.Model{0: opt1, 1: opt2},
 		keys:          keys,
 		spinner:       s,
+		dumpDropStyle: DumpDefaultStyle(),
 		selectedStyle: SelectedDefaultStyle(),
 		errorStyle:    ErrorDefaultStyle(),
 	}
@@ -70,7 +72,7 @@ func (app Application) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 	case cmd.RunResMsg:
 		switch msg {
 		case cmd.DumpDrop:
-			app.info = append(app.info, fmt.Sprintf("%s %s", time.Now().Format("15:04:05"), msg.Info))
+			app.info = append(app.info, fmt.Sprintf("%s: %s", time.Now().Format("15:04:05"), "Падение дампа"))
 			return app, app.checkDump
 		
 		case cmd.NoDumps:
@@ -133,7 +135,7 @@ func (app Application) View() string {
 	infoView := "\n\n"
 	if app.info != nil {
 		for i:=len(app.info) - 1; i>=0; i-- {
-			infoView += app.errorStyle.Render(app.info[i]) + "\n"
+			infoView += app.dumpDropStyle.Render(app.info[i]) + "\n"
 		}
 	}
 
@@ -146,8 +148,6 @@ func (app Application) View() string {
 	view := menusView + optionsView + infoView + errView
 
 	helpView := app.help.View(app.keys)
-
-	// height := 8 - strings.Count(view, "\n") - strings.Count(helpView, "\n")
 
 	return view + helpView
 }
