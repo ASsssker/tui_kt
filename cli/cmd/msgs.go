@@ -5,9 +5,11 @@ type RunResMsg struct {
 }
 
 var (
-	Successfully = RunResMsg{Info: "succesfull"}
-	DumpDrop     = RunResMsg{Info: "dump drop"}
-	NoDumps      = RunResMsg{Info: "no dumps"}
+	Successfully   = RunResMsg{Info: "succesfull"}
+	DumpDrop       = RunResMsg{Info: "dump drop"}
+	PluginDumpDrop = RunResMsg{Info: "plugin dump drop"}
+	NoDumps        = RunResMsg{Info: "no dumps"}
+	NoPluginDumps  = RunResMsg{Info: "no plugin dumps"}
 )
 
 func createErrMsg(err error) RunResMsg {

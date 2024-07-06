@@ -62,7 +62,7 @@ func InitApp() Application {
 }
 
 func (app Application) Init() tea.Cmd {
-	return tea.Batch(tea.ClearScreen, app.spinner.Tick, cmd.InitChecker, cmd.CheckDump)
+	return tea.Batch(tea.ClearScreen, app.spinner.Tick, cmd.InitChecker, cmd.CheckDump, cmd.IninPluginChecker, cmd.CheckPluginDump)
 }
 
 func (app Application) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
@@ -75,8 +75,15 @@ func (app Application) Update(msg tea.Msg) (tea.Model, tea.Cmd) {
 			app.info = append(app.info, fmt.Sprintf("%s: %s", time.Now().Format("15:04:05"), "Падение дампа"))
 			return app, app.checkDump
 		
+		case cmd.PluginDumpDrop:
+			app.info = append(app.info, fmt.Sprintf("%s: %s", time.Now().Format("15:04:05"), "Падние дампа плагина"))
+			return app, app.checkPluginDump
+		
 		case cmd.NoDumps:
 			return app, app.checkDump
+
+		case cmd.NoPluginDumps:
+			return app, app.checkPluginDump
 
 		default:
 			if msg != cmd.Successfully {

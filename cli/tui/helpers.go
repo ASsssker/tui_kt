@@ -69,3 +69,11 @@ func (app *Application) checkDump() tea.Msg {
 	}
 	return msg
 }
+
+func (app *Application) checkPluginDump() tea.Msg {
+	msg := cmd.CheckPluginDump()
+	if msg == cmd.PluginDumpDrop {
+		cmd.IninPluginChecker()
+	}
+	return msg
+}
