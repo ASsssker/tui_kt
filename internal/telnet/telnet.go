@@ -37,6 +37,10 @@ func connect(host string, port uint) (net.Conn, error) {
 	return conn, err
 }
 
+func (c *Client) Close() error {
+	return c.conn.Close()
+}
+
 func (c *Client) ReadUntil(subbytes []byte) ([]byte, error) {
 	var data []byte
 

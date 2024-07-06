@@ -51,6 +51,7 @@ func CheckPluginDump() tea.Msg {
 
 func getPluginDirFiles(path, username, password, host string, port uint) ([]string, error) {
 	client, _ := telnet.GetClient(host, port)
+	defer client.Close()
 	if client.Auth(username, password) {
 		command := fmt.Sprintf("ls -l %s", path)
 		client.WriteString(command)
